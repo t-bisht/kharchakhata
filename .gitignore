@@ -1,1 +1,45 @@
-.git
+# ─── Secrets / OAuth ─────────────────────────────────────────────
+g_credentials.md
+gcloud_app_credentials.json
+prototypes/
+.env
+.env.local
+.env.*.local
+
+# ─── Editor & OS ─────────────────────────────────────────────────
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ─── Python (uv workspace under /py) ─────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+.python-version
+# uv.lock IS committed — kept for reproducible installs.
+
+# ─── Java / Gradle (under /java) ─────────────────────────────────
+.gradle/
+build/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+
+# ─── Node / Web (under /web) ─────────────────────────────────────
+node_modules/
+dist/
+*.log
+npm-debug.log*
+*.tsbuildinfo
+.vite/
+
+# ─── Claude ──────────────────────────────────────────────────────
+.claude/
+!.claude/skills/
+!.claude/skills/**

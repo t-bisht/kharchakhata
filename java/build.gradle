@@ -1,0 +1,14 @@
+// Root build — registers plugin versions only (apply false).
+// Shared build logic lives in buildSrc convention plugins.
+// Versions live in gradle/libs.versions.toml.
+
+allprojects {
+    group   = 'org.tb.khata'
+    version = '0.1.0-SNAPSHOT'
+}
+
+tasks.register('format') {
+    group       = 'verification'
+    description = 'Apply Spotless formatting to all subprojects'
+    dependsOn subprojects.collect { it.tasks.matching { t -> t.name == 'spotlessApply' } }
+}

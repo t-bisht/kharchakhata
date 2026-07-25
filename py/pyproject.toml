@@ -1,0 +1,15 @@
+[tool.uv.workspace]
+members = [
+    "ingestion",
+    "stager",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "--import-mode=importlib"

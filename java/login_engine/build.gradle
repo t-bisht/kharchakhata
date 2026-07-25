@@ -1,0 +1,22 @@
+// login_engine — runnable Spring Boot service for Google OAuth login + token lifecycle + session JWT.
+
+plugins {
+    id 'khata.spring-conventions'
+    id 'org.springframework.boot'
+}
+
+dependencies {
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.data.jpa
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.boot.starter.validation
+
+    implementation libs.jjwt.api
+    runtimeOnly libs.jjwt.impl
+    runtimeOnly libs.jjwt.jackson
+
+    runtimeOnly libs.postgresql
+
+    testImplementation libs.testcontainers.postgresql
+}

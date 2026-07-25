@@ -1,0 +1,53 @@
+// khata.java-conventions — applied to every Java subproject.
+// Java 21 toolchain, Spotless (Google Java Format AOSP), JaCoCo, JUnit 5.
+
+plugins {
+    id 'java'
+    id 'com.diffplug.spotless'
+    id 'jacoco'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += [
+        '-parameters',
+        '-Xlint:all',
+        '-Xlint:-processing',
+    ]
+    options.encoding = 'UTF-8'
+}
+
+spotless {
+    java {
+        googleJavaFormat('1.22.0').aosp()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required  = true
+        html.required = true
+    }
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    jvmArgs '-XX:+EnableDynamicAgentLoading'
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+    }
+}

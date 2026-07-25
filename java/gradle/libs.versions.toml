@@ -1,0 +1,76 @@
+# ─── Versions ────────────────────────────────────────────────
+[versions]
+java = "21"
+
+spring-boot            = "3.3.4"
+spring-dependency-mgmt = "1.1.6"
+
+# Mapping + Utilities
+lombok  = "1.18.34"
+jackson = "2.17.2"
+slf4j   = "2.0.13"
+jjwt    = "0.12.6"
+
+# Build / Quality
+spotless = "6.25.0"
+jacoco   = "0.8.12"
+
+# Testing
+junit          = "5.11.0"
+assertj        = "3.26.3"
+mockito        = "5.12.0"
+testcontainers = "1.20.1"
+
+
+# ─── Libraries ───────────────────────────────────────────────
+[libraries]
+spring-boot-starter-web        = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-data-jpa   = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-actuator   = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-security   = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-test       = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
+
+postgresql = { module = "org.postgresql:postgresql" }
+
+jjwt-api     = { module = "io.jsonwebtoken:jjwt-api",     version.ref = "jjwt" }
+jjwt-impl    = { module = "io.jsonwebtoken:jjwt-impl",    version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+
+jackson-databind        = { module = "com.fasterxml.jackson.core:jackson-databind",            version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+
+junit-bom                 = { module = "org.junit:junit-bom",                   version.ref = "junit" }
+junit-jupiter             = { module = "org.junit.jupiter:junit-jupiter" }
+assertj-core              = { module = "org.assertj:assertj-core",              version.ref = "assertj" }
+mockito-core              = { module = "org.mockito:mockito-core",              version.ref = "mockito" }
+mockito-junit-jupiter     = { module = "org.mockito:mockito-junit-jupiter",     version.ref = "mockito" }
+testcontainers-bom        = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-junit      = { module = "org.testcontainers:junit-jupiter" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql" }
+
+
+# ─── Bundles ─────────────────────────────────────────────────
+[bundles]
+testing-unit = [
+    "junit-jupiter",
+    "assertj-core",
+    "mockito-core",
+    "mockito-junit-jupiter",
+]
+testing-spring = [
+    "spring-boot-starter-test",
+    "testcontainers-junit",
+]
+
+
+# ─── Plugins ─────────────────────────────────────────────────
+[plugins]
+spring-boot            = { id = "org.springframework.boot",        version.ref = "spring-boot" }
+spring-dependency-mgmt = { id = "io.spring.dependency-management", version.ref = "spring-dependency-mgmt" }
+spotless               = { id = "com.diffplug.spotless",           version.ref = "spotless" }

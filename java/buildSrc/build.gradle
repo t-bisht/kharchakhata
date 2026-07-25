@@ -1,0 +1,18 @@
+// buildSrc is compiled before the main build.
+// Convention plugins here are available to every subproject as first-class plugins.
+// Versions must stay in sync with gradle/libs.versions.toml.
+
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-gradle-plugin:3.3.4'
+    implementation 'io.spring.gradle:dependency-management-plugin:1.1.6'
+    implementation 'com.diffplug.spotless:spotless-plugin-gradle:6.25.0'
+}

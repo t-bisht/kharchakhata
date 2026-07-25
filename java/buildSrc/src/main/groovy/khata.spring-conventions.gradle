@@ -1,0 +1,28 @@
+// khata.spring-conventions — for subprojects that use Spring Boot.
+// Applies Spring Boot BOM + Testcontainers BOM + Lombok wiring.
+// The spring-boot plugin (bootJar) is registered here but NOT applied — apply it
+// explicitly in runnable service subprojects only.
+
+plugins {
+    id 'khata.java-conventions'
+    id 'org.springframework.boot' apply false
+    id 'io.spring.dependency-management'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+        mavenBom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}")
+    }
+}
+
+dependencies {
+    annotationProcessor libs.spring.boot.configuration.processor
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+
+    testImplementation libs.bundles.testing.spring
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
