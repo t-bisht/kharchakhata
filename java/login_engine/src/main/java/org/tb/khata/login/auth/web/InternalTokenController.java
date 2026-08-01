@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.tb.khata.login.auth.GoogleTokenRefresher;
+import org.tb.khata.login.auth.gcp.GoogleTokenRefresher;
 import org.tb.khata.login.auth.exception.LoginTokenNotFoundException;
 import org.tb.khata.login.auth.exception.UserContextMismatchException;
 import org.tb.khata.login.auth.persistence.LoginToken;

@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.tb.khata.login.auth.dto.GoogleTokenResponse;
+import org.tb.khata.login.auth.gcp.dto.GoogleTokenResponse;
 import org.tb.khata.login.auth.exception.TokenPersistenceException;
 import org.tb.khata.login.auth.persistence.LoginToken;
 import org.tb.khata.login.auth.persistence.LoginTokenRepository;

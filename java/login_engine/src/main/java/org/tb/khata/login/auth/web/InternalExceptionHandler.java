@@ -14,11 +14,15 @@ import org.tb.khata.login.auth.exception.LoginTokenNotFoundException;
 import org.tb.khata.login.auth.exception.UpstreamUnavailableException;
 import org.tb.khata.login.auth.exception.UserContextMismatchException;
 import org.tb.khata.login.auth.exception.UserContextRequiredException;
+import org.tb.khata.login.auth.gcp.contollers.AuthExceptionHandler;
 
 /**
  * Translates internal-boundary exceptions into JSON error bodies per spec §10. Distinct from
  * {@link AuthExceptionHandler} (which redirects for the browser-facing flow) — internal callers
  * are other services, not browsers, so they get machine-readable responses.
+ *
+ * <p>Scoped to the internal-web package so it does not intercept exceptions from the browser
+ * OAuth controllers.
  */
 @ControllerAdvice(basePackages = "org.tb.khata.login.auth.web")
 public class InternalExceptionHandler {

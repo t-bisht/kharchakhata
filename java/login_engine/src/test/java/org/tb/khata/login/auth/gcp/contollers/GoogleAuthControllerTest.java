@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.web;
+package org.tb.khata.login.auth.gcp.contollers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,18 +26,35 @@ import org.tb.khata.login.auth.OAuthStateGenerator;
 import org.tb.khata.login.auth.SessionJwtIssuer;
 import org.tb.khata.login.auth.config.JwtProperties;
 import org.tb.khata.login.auth.config.RedirectAllowlistProperties;
-import org.tb.khata.login.auth.dto.GoogleTokenResponse;
-import org.tb.khata.login.auth.dto.IdentityClaims;
 import org.tb.khata.login.auth.gcp.GoogleAuthUrlBuilder;
 import org.tb.khata.login.auth.gcp.GoogleOAuthClient;
 import org.tb.khata.login.auth.gcp.IdTokenClaimsReader;
+import org.tb.khata.login.auth.gcp.dto.GoogleTokenResponse;
+import org.tb.khata.login.auth.gcp.dto.IdentityClaims;
+import org.tb.khata.login.auth.gcp.services.CookieCreator;
+import org.tb.khata.login.auth.gcp.services.GoogleAuthCallbackService;
+import org.tb.khata.login.auth.gcp.services.GoogleAuthStartService;
+import org.tb.khata.login.auth.gcp.services.RedirectionResolver;
 
+/**
+ * MVC-slice test for {@link GoogleAuthController}. The controller itself is a thin façade after
+ * the phase-1 refactor — the real work lives in {@link GoogleAuthStartService} /
+ * {@link GoogleAuthCallbackService} / {@link CookieCreator} / {@link RedirectionResolver}, which
+ * are wired as real beans here so the test still exercises the end-to-end HTTP behaviour.
+ *
+ * <p>Logout tests were removed alongside {@code /logout} being taken out of the controller —
+ * see {@code GoogleLogoutService} for the planned redesign.
+ */
 @WebMvcTest(controllers = GoogleAuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(
         classes = {
             GoogleAuthController.class,
             AuthExceptionHandler.class,
+            GoogleAuthStartService.class,
+            GoogleAuthCallbackService.class,
+            CookieCreator.class,
+            RedirectionResolver.class,
             GoogleAuthControllerTest.TestConfig.class
         })
 class GoogleAuthControllerTest {
@@ -129,6 +146,7 @@ class GoogleAuthControllerTest {
         given(idTokenReader.readClaims("header.payload.sig"))
                 .willReturn(new IdentityClaims("sub-1", "tb@example.com", "TB", "https://pic"));
         given(jwtIssuer.issue(any(), any())).willReturn("session.jwt.here");
+        given(stateGenerator.generate()).willReturn("csrf-token-value");
 
         ResultActions r =
                 mvc.perform(
@@ -143,6 +161,7 @@ class GoogleAuthControllerTest {
         List<String> cookies = r.andReturn().getResponse().getHeaders("Set-Cookie");
         assertThat(cookies)
                 .anyMatch(c -> c.startsWith("kk_session=session.jwt.here") && c.contains("HttpOnly"))
+                .anyMatch(c -> c.startsWith("kk_csrf=csrf-token-value"))
                 .anyMatch(c -> c.startsWith("kk_oauth_state=") && c.contains("Max-Age=0"))
                 .anyMatch(c -> c.startsWith("kk_oauth_post_login=") && c.contains("Max-Age=0"));
     }
@@ -177,38 +196,5 @@ class GoogleAuthControllerTest {
 
         r.andExpect(status().is(302))
                 .andExpect(header().string("Location", "/login?err=access_denied"));
-    }
-
-    // ─── §4.4 — /logout ─────────────────────────────────────────────────
-
-    @Test
-    void logoutWithMatchingCsrfClearsCookies() throws Exception {
-        ResultActions r =
-                mvc.perform(
-                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                                        "/api/auth/logout")
-                                .cookie(new Cookie("kk_csrf", "csrf-abc"))
-                                .header("X-CSRF-Token", "csrf-abc"));
-
-        r.andExpect(status().is(204));
-
-        List<String> cookies = r.andReturn().getResponse().getHeaders("Set-Cookie");
-        assertThat(cookies)
-                .anyMatch(c -> c.startsWith("kk_session=") && c.contains("Max-Age=0"))
-                .anyMatch(c -> c.startsWith("kk_csrf=") && c.contains("Max-Age=0"));
-    }
-
-    @Test
-    void logoutWithMismatchedCsrfReturnsCsrfMismatchRedirect() throws Exception {
-        ResultActions r =
-                mvc.perform(
-                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                                        "/api/auth/logout")
-                                .cookie(new Cookie("kk_csrf", "one"))
-                                .header("X-CSRF-Token", "different"));
-
-        // CsrfMismatchException maps via AuthExceptionHandler to /login?err=state_invalid
-        r.andExpect(status().is(302))
-                .andExpect(header().string("Location", "/login?err=state_invalid"));
     }
 }

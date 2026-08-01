@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import org.junit.jupiter.api.Test;
-import org.tb.khata.login.auth.dto.IdentityClaims;
+import org.tb.khata.login.auth.gcp.dto.IdentityClaims;
 import org.tb.khata.login.auth.exception.EmailUnverifiedException;
 import org.tb.khata.login.auth.exception.IdTokenMalformedException;
 

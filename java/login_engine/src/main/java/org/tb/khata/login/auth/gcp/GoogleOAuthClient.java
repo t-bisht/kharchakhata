@@ -9,7 +9,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 import org.tb.khata.login.auth.config.GoogleOAuthProperties;
-import org.tb.khata.login.auth.dto.GoogleTokenResponse;
+import org.tb.khata.login.auth.gcp.dto.GoogleTokenResponse;
 import org.tb.khata.login.auth.exception.GoogleAuthRevokedException;
 import org.tb.khata.login.auth.exception.GoogleTokenExchangeFailedException;
 import org.tb.khata.login.auth.exception.UpstreamUnavailableException;

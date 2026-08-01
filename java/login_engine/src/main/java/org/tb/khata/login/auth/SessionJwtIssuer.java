@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import org.tb.khata.login.auth.config.JwtProperties;
-import org.tb.khata.login.auth.dto.IdentityClaims;
+import org.tb.khata.login.auth.gcp.dto.IdentityClaims;
 
 /**
  * Signs "thick" session JWTs using RS256 with the key held by {@link RsaKeyProvider}.

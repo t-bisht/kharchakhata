@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth;
+package org.tb.khata.login.auth.gcp;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.tb.khata.login.auth.dto.GoogleTokenResponse;
+import org.tb.khata.login.auth.gcp.dto.GoogleTokenResponse;
 import org.tb.khata.login.auth.exception.GoogleAuthRevokedException;
 import org.tb.khata.login.auth.exception.LoginTokenNotFoundException;
 import org.tb.khata.login.auth.gcp.GoogleOAuthClient;

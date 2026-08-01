@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.dto;
+package org.tb.khata.login.auth.gcp.dto;
 
 import org.tb.khata.login.auth.gcp.IdTokenClaimsReader;
 

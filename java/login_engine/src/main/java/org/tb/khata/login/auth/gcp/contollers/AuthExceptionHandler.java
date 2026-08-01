@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.web;
+package org.tb.khata.login.auth.gcp.contollers;
 
 import java.net.URI;
 import org.slf4j.Logger;
@@ -19,9 +19,9 @@ import org.tb.khata.login.auth.exception.TokenPersistenceException;
  * Translates {@link AuthFlowException}s thrown by {@link GoogleAuthController} into {@code 302
  * /login?err=<code>} redirects, per spec §4.3 and §10.
  *
- * <p>Scoped to controllers under {@code org.tb.khata.login.auth.web} so a future {@code
- * /internal/**} advice can return JSON error bodies without conflicting with these HTML-style
- * redirects.
+ * <p>Scoped to the browser-facing GCP controllers package. Internal JSON endpoints under {@code
+ * org.tb.khata.login.auth.web} are handled by {@code InternalExceptionHandler} — the two advices
+ * are package-scoped so they do not fight over the same exception types.
  *
  * <p>Log-level policy matches spec §10:
  *
@@ -33,7 +33,7 @@ import org.tb.khata.login.auth.exception.TokenPersistenceException;
  *       IdTokenMalformedException})
  * </ul>
  */
-@ControllerAdvice(basePackages = "org.tb.khata.login.auth.web")
+@ControllerAdvice(basePackages = "org.tb.khata.login.auth.gcp.contollers")
 public class AuthExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(AuthExceptionHandler.class);
