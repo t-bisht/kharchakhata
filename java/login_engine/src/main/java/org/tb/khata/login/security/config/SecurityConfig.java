@@ -1,11 +1,11 @@
-package org.tb.khata.login.auth.config;
+package org.tb.khata.login.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.tb.khata.login.auth.security.InternalAuthFilter;
+import org.tb.khata.login.security.security.InternalAuthFilter;
 
 /**
  * Spring Security wiring.

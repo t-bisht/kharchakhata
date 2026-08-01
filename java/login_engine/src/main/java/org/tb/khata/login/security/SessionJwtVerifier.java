@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth;
+package org.tb.khata.login.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.security;
+package org.tb.khata.login.security.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.tb.khata.login.auth.config.TokenCipherProperties;
+import org.tb.khata.login.security.config.TokenCipherProperties;
 
 class TokenCipherTest {
 
@@ -42,8 +42,11 @@ class TokenCipherTest {
     void tamperingIsDetected() {
         String ct = cipher.encrypt("secret");
         // Flip a single character in the ciphertext portion.
-        String tampered = ct.substring(0, ct.length() - 1) + (ct.charAt(ct.length() - 1) == 'A' ? 'B' : 'A');
-        assertThatThrownBy(() -> cipher.decrypt(tampered)).isInstanceOf(IllegalStateException.class);
+        String tampered =
+                ct.substring(0, ct.length() - 1)
+                        + (ct.charAt(ct.length() - 1) == 'A' ? 'B' : 'A');
+        assertThatThrownBy(() -> cipher.decrypt(tampered))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test

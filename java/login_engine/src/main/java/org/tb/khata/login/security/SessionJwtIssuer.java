@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth;
+package org.tb.khata.login.security;
 
 import io.jsonwebtoken.Jwts;
 import java.time.Clock;
@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Component;
-import org.tb.khata.login.auth.config.JwtProperties;
+import org.tb.khata.login.security.config.JwtProperties;
 import org.tb.khata.login.auth.gcp.dto.IdentityClaims;
 
 /**

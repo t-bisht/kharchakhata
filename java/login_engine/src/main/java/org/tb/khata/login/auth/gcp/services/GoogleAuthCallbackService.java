@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.tb.khata.login.auth.LoginTokenService;
 import org.tb.khata.login.auth.OAuthStateGenerator;
-import org.tb.khata.login.auth.SessionJwtIssuer;
+import org.tb.khata.login.security.SessionJwtIssuer;
 import org.tb.khata.login.auth.exception.CsrfMismatchException;
 import org.tb.khata.login.auth.exception.LoginCancelledException;
 import org.tb.khata.login.auth.gcp.GoogleOAuthClient;
@@ -75,14 +75,15 @@ public class GoogleAuthCallbackService {
         // §4.2c — persist Google tokens (encrypted at rest via TokenCipher).
         loginTokenService.upsertFromGoogle(identity.sub(), tokens);
 
-        String sessionJwt = jwtIssuer.issue(identity, extractScopes(tokens.scope()));
-        String csrfToken = stateGenerator.generate();
+//        FURTHER INTEGRATION WITH INTERNAL JWT TOKEN TO BE IMPLEMENTED LATER
+//        String sessionJwt = jwtIssuer.issue(identity, extractScopes(tokens.scope()));
+//        String csrfToken = stateGenerator.generate();
         String redirectPath = redirectionResolver.resolveRedirect(postLoginCookie);
 
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(redirectPath))
-                .header(HttpHeaders.SET_COOKIE, cookieCreator.sessionCookie(sessionJwt).toString())
-                .header(HttpHeaders.SET_COOKIE, cookieCreator.csrfCookie(csrfToken).toString())
+//                .header(HttpHeaders.SET_COOKIE, cookieCreator.sessionCookie(sessionJwt).toString())
+//                .header(HttpHeaders.SET_COOKIE, cookieCreator.csrfCookie(csrfToken).toString())
                 .header(HttpHeaders.SET_COOKIE, cookieCreator.clearedOauthCookie(STATE_COOKIE).toString())
                 .header(HttpHeaders.SET_COOKIE, cookieCreator.clearedOauthCookie(POST_LOGIN_COOKIE).toString())
                 .build();

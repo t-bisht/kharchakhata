@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.security;
+package org.tb.khata.login.security.security;
 
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
@@ -8,7 +8,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Component;
-import org.tb.khata.login.auth.config.TokenCipherProperties;
+import org.tb.khata.login.security.config.TokenCipherProperties;
 
 /**
  * AES-256-GCM encryption for Google tokens at rest (spec §9.1 Open Q #5).

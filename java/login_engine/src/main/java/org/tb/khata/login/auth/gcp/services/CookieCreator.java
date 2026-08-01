@@ -4,7 +4,7 @@ package org.tb.khata.login.auth.gcp.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
-import org.tb.khata.login.auth.config.JwtProperties;
+import org.tb.khata.login.security.config.JwtProperties;
 
 import static org.tb.khata.login.auth.gcp.GCPAuthConstants.*;
 

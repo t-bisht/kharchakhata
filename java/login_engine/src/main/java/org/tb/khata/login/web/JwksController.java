@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.web;
+package org.tb.khata.login.web;
 
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.tb.khata.login.auth.RsaKeyProvider;
+import org.tb.khata.login.security.RsaKeyProvider;
 
 /**
  * Publishes {@code auth_engine}'s public signing key(s) as a JWK Set (RFC 7517) so sub-engines

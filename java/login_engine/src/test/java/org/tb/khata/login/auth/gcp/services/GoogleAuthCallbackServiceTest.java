@@ -2,9 +2,7 @@ package org.tb.khata.login.auth.gcp.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -17,9 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.tb.khata.login.auth.LoginTokenService;
-import org.tb.khata.login.auth.OAuthStateGenerator;
-import org.tb.khata.login.auth.SessionJwtIssuer;
-import org.tb.khata.login.auth.config.JwtProperties;
 import org.tb.khata.login.auth.config.RedirectAllowlistProperties;
 import org.tb.khata.login.auth.exception.CsrfMismatchException;
 import org.tb.khata.login.auth.exception.LoginCancelledException;
@@ -27,14 +22,22 @@ import org.tb.khata.login.auth.gcp.GoogleOAuthClient;
 import org.tb.khata.login.auth.gcp.IdTokenClaimsReader;
 import org.tb.khata.login.auth.gcp.dto.GoogleTokenResponse;
 import org.tb.khata.login.auth.gcp.dto.IdentityClaims;
+import org.tb.khata.login.security.config.JwtProperties;
 
+/**
+ * Unit test for {@link GoogleAuthCallbackService}.
+ *
+ * <p>Phase-2 note: session-JWT minting and CSRF cookie emission are currently commented out in the
+ * callback — the flow lands users back on the SPA without a {@code kk_session} cookie. These tests
+ * cover the surviving behaviour (CSRF state check, token persistence, oauth cookie clearing,
+ * redirect). When JWT wiring is restored, re-add {@code jwtIssuer}/{@code stateGenerator} stubs
+ * plus assertions on {@code kk_session} + {@code kk_csrf}.
+ */
 class GoogleAuthCallbackServiceTest {
 
     private GoogleOAuthClient googleClient;
     private IdTokenClaimsReader idTokenReader;
     private LoginTokenService loginTokenService;
-    private SessionJwtIssuer jwtIssuer;
-    private OAuthStateGenerator stateGenerator;
 
     private GoogleAuthCallbackService service;
 
@@ -43,8 +46,6 @@ class GoogleAuthCallbackServiceTest {
         googleClient = mock(GoogleOAuthClient.class);
         idTokenReader = mock(IdTokenClaimsReader.class);
         loginTokenService = mock(LoginTokenService.class);
-        jwtIssuer = mock(SessionJwtIssuer.class);
-        stateGenerator = mock(OAuthStateGenerator.class);
 
         RedirectionResolver resolver = new RedirectionResolver();
         ReflectionTestUtils.setField(
@@ -60,10 +61,10 @@ class GoogleAuthCallbackServiceTest {
         ReflectionTestUtils.setField(service, "googleClient", googleClient);
         ReflectionTestUtils.setField(service, "idTokenReader", idTokenReader);
         ReflectionTestUtils.setField(service, "loginTokenService", loginTokenService);
-        ReflectionTestUtils.setField(service, "jwtIssuer", jwtIssuer);
-        ReflectionTestUtils.setField(service, "stateGenerator", stateGenerator);
         ReflectionTestUtils.setField(service, "redirectionResolver", resolver);
         ReflectionTestUtils.setField(service, "cookieCreator", cookies);
+        // jwtIssuer and stateGenerator fields left unset — their callers inside handleCallback are
+        // commented out during phase 2. Restore stubs when the JWT branch is re-enabled.
     }
 
     // ─── §4.3 — failure branches short-circuit before Google is called ─────
@@ -73,7 +74,7 @@ class GoogleAuthCallbackServiceTest {
         assertThatThrownBy(
                         () -> service.handleCallback("access_denied", null, null, null, null))
                 .isInstanceOf(LoginCancelledException.class);
-        verifyNoInteractions(googleClient, idTokenReader, loginTokenService, jwtIssuer);
+        verifyNoInteractions(googleClient, idTokenReader, loginTokenService);
     }
 
     @Test
@@ -104,7 +105,7 @@ class GoogleAuthCallbackServiceTest {
     // ─── §4.2 — happy path ────────────────────────────────────────────────
 
     @Test
-    void happyPathPersistsTokensMintsJwtAndReturnsRedirectWithCookies() {
+    void happyPathPersistsTokensAndReturnsRedirectClearingOauthCookies() {
         GoogleTokenResponse tokens =
                 new GoogleTokenResponse(
                         "goog-access",
@@ -117,8 +118,6 @@ class GoogleAuthCallbackServiceTest {
                 new IdentityClaims("sub-1", "tb@example.com", "TB", "https://pic");
         given(googleClient.exchangeCode("auth-code")).willReturn(tokens);
         given(idTokenReader.readClaims("header.payload.sig")).willReturn(identity);
-        given(jwtIssuer.issue(any(), any())).willReturn("session.jwt.here");
-        given(stateGenerator.generate()).willReturn("csrf-abc");
 
         ResponseEntity<Void> response =
                 service.handleCallback(null, "matching", "matching", "auth-code", "/expenses");
@@ -129,35 +128,11 @@ class GoogleAuthCallbackServiceTest {
 
         List<String> setCookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
         assertThat(setCookies)
-                .anyMatch(
-                        c ->
-                                c.startsWith("kk_session=session.jwt.here")
-                                        && c.contains("HttpOnly"))
-                .anyMatch(c -> c.startsWith("kk_csrf=csrf-abc"))
                 .anyMatch(c -> c.startsWith("kk_oauth_state=") && c.contains("Max-Age=0"))
-                .anyMatch(c -> c.startsWith("kk_oauth_post_login=") && c.contains("Max-Age=0"));
-    }
-
-    @Test
-    void scopesAreSplitAndForwardedToJwtIssuer() {
-        given(googleClient.exchangeCode(anyString()))
-                .willReturn(
-                        new GoogleTokenResponse(
-                                "a",
-                                "r",
-                                "h.p.s",
-                                3600L,
-                                "openid gmail.readonly profile",
-                                "Bearer"));
-        given(idTokenReader.readClaims(anyString()))
-                .willReturn(new IdentityClaims("s", "e@x", "n", "p"));
-        given(jwtIssuer.issue(any(), any())).willReturn("jwt");
-        given(stateGenerator.generate()).willReturn("c");
-
-        service.handleCallback(null, "s", "s", "code", null);
-
-        verify(jwtIssuer)
-                .issue(any(), eq(List.of("openid", "gmail.readonly", "profile")));
+                .anyMatch(c -> c.startsWith("kk_oauth_post_login=") && c.contains("Max-Age=0"))
+                // Phase-2 gate: session + CSRF cookies must NOT appear while JWT branch commented.
+                .noneMatch(c -> c.startsWith("kk_session="))
+                .noneMatch(c -> c.startsWith("kk_csrf="));
     }
 
     @Test
@@ -168,8 +143,6 @@ class GoogleAuthCallbackServiceTest {
                                 "a", "r", "h.p.s", 3600L, "openid", "Bearer"));
         given(idTokenReader.readClaims(anyString()))
                 .willReturn(new IdentityClaims("s", "e@x", "n", "p"));
-        given(jwtIssuer.issue(any(), any())).willReturn("jwt");
-        given(stateGenerator.generate()).willReturn("c");
 
         ResponseEntity<Void> response = service.handleCallback(null, "s", "s", "code", null);
 
@@ -184,8 +157,6 @@ class GoogleAuthCallbackServiceTest {
                                 "a", "r", "h.p.s", 3600L, "openid", "Bearer"));
         given(idTokenReader.readClaims(anyString()))
                 .willReturn(new IdentityClaims("s", "e@x", "n", "p"));
-        given(jwtIssuer.issue(any(), any())).willReturn("jwt");
-        given(stateGenerator.generate()).willReturn("c");
 
         ResponseEntity<Void> response =
                 service.handleCallback(null, "s", "s", "code", "/not-allowed");

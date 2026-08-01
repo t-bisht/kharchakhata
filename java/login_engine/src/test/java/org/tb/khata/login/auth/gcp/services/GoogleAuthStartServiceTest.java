@@ -12,7 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.tb.khata.login.auth.OAuthStateGenerator;
-import org.tb.khata.login.auth.config.JwtProperties;
+import org.tb.khata.login.security.config.JwtProperties;
 import org.tb.khata.login.auth.config.RedirectAllowlistProperties;
 import org.tb.khata.login.auth.gcp.GoogleAuthUrlBuilder;
 

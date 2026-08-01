@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth;
+package org.tb.khata.login.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -11,7 +11,7 @@ import java.security.KeyPairGenerator;
 import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.tb.khata.login.auth.config.JwtProperties;
+import org.tb.khata.login.security.config.JwtProperties;
 
 class RsaKeyProviderTest {
 
@@ -41,7 +41,9 @@ class RsaKeyProviderTest {
     @Test
     void failsFastWhenPemMalformed(@TempDir Path tmp) throws IOException {
         Path pemPath = tmp.resolve("bad.pem");
-        Files.writeString(pemPath, "-----BEGIN PRIVATE KEY-----\nnot-real-base64!!!\n-----END PRIVATE KEY-----\n");
+        Files.writeString(
+                pemPath,
+                "-----BEGIN PRIVATE KEY-----\nnot-real-base64!!!\n-----END PRIVATE KEY-----\n");
         RsaKeyProvider provider = new RsaKeyProvider(props(pemPath));
         assertThatThrownBy(provider::load).isInstanceOf(IllegalArgumentException.class);
     }
@@ -55,7 +57,9 @@ class RsaKeyProviderTest {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(2048);
         KeyPair kp = kpg.generateKeyPair();
-        String base64 = Base64.getMimeEncoder(64, "\n".getBytes()).encodeToString(kp.getPrivate().getEncoded());
+        String base64 =
+                Base64.getMimeEncoder(64, "\n".getBytes())
+                        .encodeToString(kp.getPrivate().getEncoded());
         String pem = "-----BEGIN PRIVATE KEY-----\n" + base64 + "\n-----END PRIVATE KEY-----\n";
         Path path = tmp.resolve("jwt-private.pem");
         Files.writeString(path, pem);

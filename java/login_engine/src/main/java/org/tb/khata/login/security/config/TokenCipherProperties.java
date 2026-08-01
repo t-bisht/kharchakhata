@@ -1,11 +1,12 @@
-package org.tb.khata.login.auth.config;
+package org.tb.khata.login.security.config;
 
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
+import org.tb.khata.login.security.security.TokenCipher;
 
 /**
- * Config for {@link org.tb.khata.login.auth.security.TokenCipher}.
+ * Config for {@link TokenCipher}.
  *
  * <p>Bound to {@code app.token-enc.*}. The key is a base64-encoded 32-byte secret (AES-256-GCM).
  * Generate with e.g. {@code openssl rand -base64 32}.

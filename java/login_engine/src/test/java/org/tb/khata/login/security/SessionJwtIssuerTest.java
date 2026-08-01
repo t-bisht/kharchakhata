@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth;
+package org.tb.khata.login.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,8 +17,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.tb.khata.login.auth.config.JwtProperties;
 import org.tb.khata.login.auth.gcp.dto.IdentityClaims;
+import org.tb.khata.login.security.config.JwtProperties;
 
 class SessionJwtIssuerTest {
 
@@ -56,7 +56,8 @@ class SessionJwtIssuerTest {
         assertThat(claims.get("picture")).isEqualTo("https://pic/tb");
         assertThat(claims.get("scope", List.class)).containsExactly("gmail.readonly");
         assertThat(claims.getIssuedAt().toInstant()).isEqualTo(Instant.parse("2026-08-01T00:00:00Z"));
-        assertThat(claims.getExpiration().toInstant()).isEqualTo(Instant.parse("2026-08-02T00:00:00Z"));
+        assertThat(claims.getExpiration().toInstant())
+                .isEqualTo(Instant.parse("2026-08-02T00:00:00Z"));
     }
 
     private static Path writeTempPem(Path tmp) throws Exception {

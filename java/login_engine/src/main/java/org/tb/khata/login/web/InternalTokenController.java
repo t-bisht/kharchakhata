@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.web;
+package org.tb.khata.login.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +17,7 @@ import org.tb.khata.login.auth.exception.LoginTokenNotFoundException;
 import org.tb.khata.login.auth.exception.UserContextMismatchException;
 import org.tb.khata.login.auth.persistence.LoginToken;
 import org.tb.khata.login.auth.persistence.LoginTokenRepository;
-import org.tb.khata.login.auth.security.InternalAuthFilter;
+import org.tb.khata.login.security.security.InternalAuthFilter;
 
 /**
  * Service-to-service API for Google access tokens. Spec §4.6 / §4.7 / §4.8 / §4.9.

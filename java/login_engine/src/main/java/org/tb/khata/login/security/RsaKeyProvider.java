@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth;
+package org.tb.khata.login.security;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.tb.khata.login.auth.config.JwtProperties;
+import org.tb.khata.login.security.config.JwtProperties;
 
 /**
  * Loads the RSA keypair used for session-JWT signing and JWKS publication.

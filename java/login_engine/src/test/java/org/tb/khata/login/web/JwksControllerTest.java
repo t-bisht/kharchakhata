@@ -1,6 +1,5 @@
-package org.tb.khata.login.auth.web;
+package org.tb.khata.login.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -17,7 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.tb.khata.login.auth.RsaKeyProvider;
+import org.tb.khata.login.security.RsaKeyProvider;
 
 @WebMvcTest(controllers = JwksController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -35,7 +34,10 @@ class JwksControllerTest {
 
         mvc.perform(get("/.well-known/jwks.json"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("max-age=3600")))
+                .andExpect(
+                        header().string(
+                                        "Cache-Control",
+                                        org.hamcrest.Matchers.containsString("max-age=3600")))
                 .andExpect(jsonPath("$.keys[0].kty").value("RSA"))
                 .andExpect(jsonPath("$.keys[0].use").value("sig"))
                 .andExpect(jsonPath("$.keys[0].alg").value("RS256"))

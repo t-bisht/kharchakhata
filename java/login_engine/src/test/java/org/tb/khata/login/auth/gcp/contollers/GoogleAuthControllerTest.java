@@ -1,7 +1,6 @@
 package org.tb.khata.login.auth.gcp.contollers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -23,8 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.tb.khata.login.auth.LoginTokenService;
 import org.tb.khata.login.auth.OAuthStateGenerator;
-import org.tb.khata.login.auth.SessionJwtIssuer;
-import org.tb.khata.login.auth.config.JwtProperties;
+import org.tb.khata.login.security.SessionJwtIssuer;
+import org.tb.khata.login.security.config.JwtProperties;
 import org.tb.khata.login.auth.config.RedirectAllowlistProperties;
 import org.tb.khata.login.auth.gcp.GoogleAuthUrlBuilder;
 import org.tb.khata.login.auth.gcp.GoogleOAuthClient;
@@ -132,8 +131,12 @@ class GoogleAuthControllerTest {
 
     // ─── /google/callback ────────────────────────────────────────────────
 
+    // Phase-2 note: session-JWT minting + kk_csrf cookie emission are currently commented out in
+    // GoogleAuthCallbackService — the happy path lands the user back on the SPA but without the
+    // kk_session cookie. Re-add the jwtIssuer + stateGenerator stubs and the corresponding cookie
+    // assertions when that branch is re-wired.
     @Test
-    void callbackHappyPathMintsSessionCookieAndRedirectsToPostLogin() throws Exception {
+    void callbackHappyPathClearsOauthCookiesAndRedirectsToPostLogin() throws Exception {
         given(googleClient.exchangeCode("auth-code"))
                 .willReturn(
                         new GoogleTokenResponse(
@@ -145,8 +148,6 @@ class GoogleAuthControllerTest {
                                 "Bearer"));
         given(idTokenReader.readClaims("header.payload.sig"))
                 .willReturn(new IdentityClaims("sub-1", "tb@example.com", "TB", "https://pic"));
-        given(jwtIssuer.issue(any(), any())).willReturn("session.jwt.here");
-        given(stateGenerator.generate()).willReturn("csrf-token-value");
 
         ResultActions r =
                 mvc.perform(
@@ -160,10 +161,10 @@ class GoogleAuthControllerTest {
 
         List<String> cookies = r.andReturn().getResponse().getHeaders("Set-Cookie");
         assertThat(cookies)
-                .anyMatch(c -> c.startsWith("kk_session=session.jwt.here") && c.contains("HttpOnly"))
-                .anyMatch(c -> c.startsWith("kk_csrf=csrf-token-value"))
                 .anyMatch(c -> c.startsWith("kk_oauth_state=") && c.contains("Max-Age=0"))
-                .anyMatch(c -> c.startsWith("kk_oauth_post_login=") && c.contains("Max-Age=0"));
+                .anyMatch(c -> c.startsWith("kk_oauth_post_login=") && c.contains("Max-Age=0"))
+                .noneMatch(c -> c.startsWith("kk_session="))
+                .noneMatch(c -> c.startsWith("kk_csrf="));
     }
 
     @Test

@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.web;
+package org.tb.khata.login.web;
 
 import java.util.Map;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ import org.tb.khata.login.auth.gcp.contollers.AuthExceptionHandler;
  * <p>Scoped to the internal-web package so it does not intercept exceptions from the browser
  * OAuth controllers.
  */
-@ControllerAdvice(basePackages = "org.tb.khata.login.auth.web")
+@ControllerAdvice(basePackages = "org.tb.khata.login.web")
 public class InternalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(InternalExceptionHandler.class);

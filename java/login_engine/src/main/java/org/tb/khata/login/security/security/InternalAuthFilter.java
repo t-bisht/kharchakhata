@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth.security;
+package org.tb.khata.login.security.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.tb.khata.login.auth.SessionJwtVerifier;
+import org.tb.khata.login.security.SessionJwtVerifier;
 import org.tb.khata.login.auth.config.InternalAuthProperties;
 import org.tb.khata.login.auth.exception.InternalAuthInvalidException;
 import org.tb.khata.login.auth.exception.InternalAuthMissingException;
