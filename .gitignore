@@ -1,6 +1,7 @@
 # ─── Secrets / OAuth ─────────────────────────────────────────────
 g_credentials.md
 gcloud_app_credentials.json
+kkhata_web_token.json
 prototypes/
 .env
 .env.local
@@ -40,6 +41,6 @@ npm-debug.log*
 .vite/
 
 # ─── Claude ──────────────────────────────────────────────────────
-.claude/
-!.claude/skills/
-!.claude/skills/**
+#.claude/
+#!.claude/skills/
+#!.claude/skills/**
