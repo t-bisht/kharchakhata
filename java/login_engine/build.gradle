@@ -16,6 +16,9 @@ dependencies {
     runtimeOnly libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
 
+    implementation libs.flyway.core
+    runtimeOnly    libs.flyway.database.postgresql
+
     runtimeOnly libs.postgresql
 
     testImplementation libs.testcontainers.postgresql

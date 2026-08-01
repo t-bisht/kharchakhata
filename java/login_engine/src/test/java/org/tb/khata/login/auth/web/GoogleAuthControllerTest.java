@@ -21,15 +21,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.tb.khata.login.auth.gcp.GoogleAuthUrlBuilder;
-import org.tb.khata.login.auth.gcp.GoogleOAuthClient;
-import org.tb.khata.login.auth.gcp.IdTokenClaimsReader;
+import org.tb.khata.login.auth.LoginTokenService;
 import org.tb.khata.login.auth.OAuthStateGenerator;
 import org.tb.khata.login.auth.SessionJwtIssuer;
 import org.tb.khata.login.auth.config.JwtProperties;
 import org.tb.khata.login.auth.config.RedirectAllowlistProperties;
 import org.tb.khata.login.auth.dto.GoogleTokenResponse;
 import org.tb.khata.login.auth.dto.IdentityClaims;
+import org.tb.khata.login.auth.gcp.GoogleAuthUrlBuilder;
+import org.tb.khata.login.auth.gcp.GoogleOAuthClient;
+import org.tb.khata.login.auth.gcp.IdTokenClaimsReader;
 
 @WebMvcTest(controllers = GoogleAuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -61,6 +62,7 @@ class GoogleAuthControllerTest {
     @MockBean GoogleOAuthClient googleClient;
     @MockBean IdTokenClaimsReader idTokenReader;
     @MockBean SessionJwtIssuer jwtIssuer;
+    @MockBean LoginTokenService loginTokenService;
 
     // ─── /google/start ────────────────────────────────────────────────────
 
@@ -175,5 +177,38 @@ class GoogleAuthControllerTest {
 
         r.andExpect(status().is(302))
                 .andExpect(header().string("Location", "/login?err=access_denied"));
+    }
+
+    // ─── §4.4 — /logout ─────────────────────────────────────────────────
+
+    @Test
+    void logoutWithMatchingCsrfClearsCookies() throws Exception {
+        ResultActions r =
+                mvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                                        "/api/auth/logout")
+                                .cookie(new Cookie("kk_csrf", "csrf-abc"))
+                                .header("X-CSRF-Token", "csrf-abc"));
+
+        r.andExpect(status().is(204));
+
+        List<String> cookies = r.andReturn().getResponse().getHeaders("Set-Cookie");
+        assertThat(cookies)
+                .anyMatch(c -> c.startsWith("kk_session=") && c.contains("Max-Age=0"))
+                .anyMatch(c -> c.startsWith("kk_csrf=") && c.contains("Max-Age=0"));
+    }
+
+    @Test
+    void logoutWithMismatchedCsrfReturnsCsrfMismatchRedirect() throws Exception {
+        ResultActions r =
+                mvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                                        "/api/auth/logout")
+                                .cookie(new Cookie("kk_csrf", "one"))
+                                .header("X-CSRF-Token", "different"));
+
+        // CsrfMismatchException maps via AuthExceptionHandler to /login?err=state_invalid
+        r.andExpect(status().is(302))
+                .andExpect(header().string("Location", "/login?err=state_invalid"));
     }
 }

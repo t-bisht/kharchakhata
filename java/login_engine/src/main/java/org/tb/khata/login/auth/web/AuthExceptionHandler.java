@@ -13,6 +13,7 @@ import org.tb.khata.login.auth.exception.EmailUnverifiedException;
 import org.tb.khata.login.auth.exception.GoogleTokenExchangeFailedException;
 import org.tb.khata.login.auth.exception.IdTokenMalformedException;
 import org.tb.khata.login.auth.exception.LoginCancelledException;
+import org.tb.khata.login.auth.exception.TokenPersistenceException;
 
 /**
  * Translates {@link AuthFlowException}s thrown by {@link GoogleAuthController} into {@code 302
@@ -50,7 +51,11 @@ public class AuthExceptionHandler {
         return redirect(e);
     }
 
-    @ExceptionHandler({GoogleTokenExchangeFailedException.class, IdTokenMalformedException.class})
+    @ExceptionHandler({
+        GoogleTokenExchangeFailedException.class,
+        IdTokenMalformedException.class,
+        TokenPersistenceException.class
+    })
     ResponseEntity<Void> onUpstreamFailure(AuthFlowException e) {
         log.error("Auth flow upstream failure [{}]: {}", e.errorCode(), e.getMessage(), e);
         return redirect(e);

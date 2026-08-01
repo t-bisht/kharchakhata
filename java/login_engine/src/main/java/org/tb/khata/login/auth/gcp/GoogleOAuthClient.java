@@ -10,14 +10,17 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 import org.tb.khata.login.auth.config.GoogleOAuthProperties;
 import org.tb.khata.login.auth.dto.GoogleTokenResponse;
+import org.tb.khata.login.auth.exception.GoogleAuthRevokedException;
 import org.tb.khata.login.auth.exception.GoogleTokenExchangeFailedException;
+import org.tb.khata.login.auth.exception.UpstreamUnavailableException;
 
 /**
- * HTTP client for Google's OAuth token endpoint.
+ * HTTP client for Google's OAuth token endpoint. Handles both:
  *
- * <p>Only responsibility: POST an authorization code to Google's {@code /token} endpoint using
- * {@code grant_type=authorization_code} and return the parsed response. Refresh flow (spec §4.7)
- * will add a second method on this class later.
+ * <ul>
+ *   <li>{@link #exchangeCode(String)} — initial code-for-tokens exchange (spec §4.2)
+ *   <li>{@link #refresh(String)} — swap refresh_token for a new access_token (spec §4.7)
+ * </ul>
  *
  * <p>Uses Spring's {@link RestClient} (synchronous, Spring 6.1+). Timeouts and retries rely on
  * defaults for now — tune when we see real Google flakiness.
@@ -76,6 +79,59 @@ public class GoogleOAuthClient {
         } catch (Exception e) {
             log.warn("Google /token exchange failed: {}", e.getMessage());
             throw new GoogleTokenExchangeFailedException("Google /token unreachable", e);
+        }
+    }
+
+    /**
+     * Uses a stored refresh_token to mint a fresh access_token. Google usually keeps the same
+     * refresh_token but occasionally rotates it — the caller must persist whatever comes back.
+     *
+     * @param refreshToken the previously-stored Google refresh_token
+     * @return parsed token response ({@code access_token} + {@code expires_in} always populated;
+     *     {@code refresh_token} present only when rotated)
+     * @throws GoogleAuthRevokedException on {@code 400 invalid_grant} — user revoked or Google
+     *     invalidated the grant; recovery requires full re-consent
+     * @throws UpstreamUnavailableException on other Google errors or network failure
+     */
+    public GoogleTokenResponse refresh(String refreshToken) {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("client_id", props.clientId());
+        form.add("client_secret", props.clientSecret());
+        form.add("refresh_token", refreshToken);
+        form.add("grant_type", "refresh_token");
+
+        try {
+            GoogleTokenResponse body =
+                    restClient
+                            .post()
+                            .uri(props.tokenUri())
+                            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                            .accept(MediaType.APPLICATION_JSON)
+                            .body(form)
+                            .retrieve()
+                            .body(GoogleTokenResponse.class);
+            if (body == null || body.accessToken() == null) {
+                throw new UpstreamUnavailableException(
+                        "Google /token refresh missing access_token", null);
+            }
+            return body;
+        } catch (RestClientResponseException e) {
+            // Google returns 400 { error: "invalid_grant" } for revoked / invalid refresh tokens.
+            String responseBody = e.getResponseBodyAsString();
+            if (e.getStatusCode().value() == 400 && responseBody.contains("invalid_grant")) {
+                throw new GoogleAuthRevokedException("Google returned invalid_grant on refresh");
+            }
+            log.warn(
+                    "Google /token refresh failed: status={}, body={}",
+                    e.getStatusCode(),
+                    responseBody);
+            throw new UpstreamUnavailableException(
+                    "Google /token refresh returned " + e.getStatusCode(), e);
+        } catch (GoogleAuthRevokedException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Google /token refresh failed: {}", e.getMessage());
+            throw new UpstreamUnavailableException("Google /token unreachable", e);
         }
     }
 }

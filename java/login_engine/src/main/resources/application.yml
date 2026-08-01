@@ -39,6 +39,14 @@ app:
     active-kid:       ${APP_JWT_ACTIVE_KID:v1}
     issuer:           ${APP_JWT_ISSUER:auth_engine}
     expiration-hours: ${APP_JWT_EXPIRATION_HOURS:24}
+  token-enc:
+    # AES-256-GCM key for encrypting login_tokens at rest. Generate with:
+    #   openssl rand -base64 32
+    # DO NOT use the compose default in staging/prod.
+    key: ${APP_TOKEN_ENC_KEY:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+  internal:
+    # Shared secret sent by other services as X-Internal-Auth on /internal/** calls.
+    svc-token: ${INTERNAL_SVC_TOKEN:dev-internal-token-change-me}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
 
