@@ -6,6 +6,8 @@ prototypes/
 .env
 .env.local
 .env.*.local
+infra/secrets/
+*.pem
 
 # ─── Editor & OS ─────────────────────────────────────────────────
 .idea/

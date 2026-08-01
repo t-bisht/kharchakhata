@@ -1,4 +1,4 @@
-package org.tb.khata.login.auth;
+package org.tb.khata.login.auth.gcp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
