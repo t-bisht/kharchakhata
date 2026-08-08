@@ -1,0 +1,123 @@
+:toc:
+:sectnums:
+== K-Khata App Hi - Level Design
+
+=== Core Components / Engines
+
+[plantuml]
+----
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Boundary(hiem,'Hiemdall'){
+    System(hi,'Hiemdall','Authorization and Authentication engine')
+}
+
+Boundary(khata,'Kharca-Khata'){
+
+    System(ui,'User Interface','react based user interface for KKhata')
+    System(users,'User Engine', 'user focused microservices')
+    System(dash,'Dashboard Engine','dashboard and reporting focused microservice')
+
+    System_Boundary(ds,'Data Science Platform'){
+        Component(swig,'Gmail-Scanner','Python based engine that scans & downloads User gmail account for configured emails')
+        Component(par,'Content-Parser','Responsible for parsing email contents and storing in database')
+        Component(span,'Spend-Analyzer', 'Generates spend analysis warm up aggregation')
+    }
+
+}
+
+
+@enduml
+----
+
+== Workflows
+
+=== User login and initiate profile setup
+
+[plantuml]
+----
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Boundary(hiem,'Hiemdall'){
+    System(hi,'Hiemdall','Authorization and Authentication engine')
+}
+
+Boundary(khata,'Kharca-Khata'){
+    System(ui,'User Interface','react based user interface for KKhata')
+    System(users,'User Engine', 'user focused microservices')
+
+    System(dash,'Dashboard Engine','dashboard and reporting focused microservice')
+
+     System_Boundary(ds,'Data Science Platform'){
+        Component(sca,'Gmail-Scanner','Python based engine that scans & downloads User gmail account for configured emails')
+    }
+
+}
+
+Rel_U(ui,hi,'1.initiate_fedration_login')
+Rel_D(hi,users,'2.pass_tokens')
+Rel_D(users,sca,'request gmail parsing for one month of data (backgroung and warmup)')
+Rel_D(hi,ui,'3.redirect')
+Rel_D(ui,users,'4.register_user')
+Rel_D(ui,dash,'5.call_for_showing_dashboard_content')
+
+----
+
+[NOTE]
+====
+* How would UI redirect to user engine to register the user needs to be thought of
+* The UI would want to know if the user is new or existing
+** If new redirect to user registration
+** Existing take to dashboard
+* The user engine should also check the following
+** If the user is existing and their tokens are not expired dont update the token
+*** Need to check if a google re logins from different device would google expire the previous tokens
+* For new user Dashboard engine would need to make sure that data analysis is ready
+====
+
+=== Connection to GMAIL , scanning instamart mails , parse and store in DB
+
+[plantuml]
+----
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+
+Boundary(khata,'Kharca-Khata'){
+
+    System_Boundary(ds,'Data Science Platform'){
+        Component(sca,'Gmail-Scanner','Python based engine that scans & downloads User gmail account for configured emails')
+        Container(vol,'Storage Volume','Volume at compose level that can be shared by other containers')
+        Component(par,'Content-Parser','Responsible for parsing email contents and storing in database')
+
+    }
+
+    SystemDb(kdb,'K-Khata Database','Postgrese database')
+
+    Rel_D(sca,kdb,'get: access token')
+    Rel(sca, vol,'push: attachments downloaded')
+    Rel(sca,kdb,'push:scan_details')
+}
+
+System_Ext(or,'Open router', 'hosted LLM service')
+
+Rel_D(sca,par,'trigger_parsing_request')
+Rel_D(par,or, 'parse_attachments')
+Rel(par,kdb,'persist_ledger')
+Rel(par,vol,'read_attachments')
+
+System_Ext(gcp,'Google','gmail access')
+
+Rel_U(sca, gcp, get:mail&attachment)
+
+----
+
+=== Grocery Analytics
+
+* Sources
+** Swiggy (version 1 )
+** Blinkit (version 2)
+
